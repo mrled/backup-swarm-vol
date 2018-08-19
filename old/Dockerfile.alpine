@@ -1,0 +1,54 @@
+FROM alpine:latest
+LABEL maintainer "me@micahrl.com"
+
+# MANDATORY environment variables that have no defaults
+#
+# The name for the backup file.
+# ENV BASENAME
+#
+# The path to a public GPG key which will be used to encrypt the backups before uploading
+# (add in as a Docker Swarm config)
+ENV RECIPIENT_KEY_PATH /etc/recipient.key.gpg
+#
+# The S3 bucket to upload the encrypted backup to.
+# ENV S3BUCKET
+
+# min hour day month weekday
+ENV BACKUPSCHEDULE "0 2 * * *"
+
+# If any value other than 1, will not compress
+ENV COMPRESS 1
+
+# If set, will pull extra environment variables from here
+# Intended to be used with Docker Swarm secrets
+ENV ADDITIONAL_ENVFILE ""
+
+RUN true \
+    && apk add --no-cache \
+        dcron \
+        dumb-init \
+        gnupg \
+        openssl \
+        python3 \
+        xz \
+    && python3 -m ensurepip \
+    && python3 -m pip install -U pip \
+    && python3 -m pip install \
+        awscli \
+        boto3 \
+    && true
+
+VOLUME /srv/backuproot
+
+COPY ["bsv.py", "/usr/local/bin/"]
+RUN chmod 755 /usr/local/bin/bsv.py
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/usr/local/bin/entrypoint.sh"]
+
+
+log "Backup directory:         ${BACKUPDIR}"
+log "Basename:                 ${BASENAME}"
+log "Recipient:                ${RECIPIENT}"
+log "Compress:                 ${COMPRESS}"
+log "Additional env file:      ${ADDITIONAL_ENVFILE}"
+log "S3 bucket:                ${S3BUCKET}"
