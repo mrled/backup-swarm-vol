@@ -69,5 +69,33 @@ It might look like this:
     @{
         AwsAccessKey = "AKIAIOSFODNN7EXAMPLE"
         AwsSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-        AwsRegion = "us-east-1"
     }
+
+### Example compose file
+
+TODO
+
+### Example without Swarm or compose (for testing)
+
+This is likely not useful in the real world,
+but the container can be tested by mounting Docker volumes
+to the paths where Swarm service config/secret files are.
+
+Note that service config files are in the root,
+while service secrets files are in `/run/secrets`.
+
+First, create the config files listed above in the current directory.
+Then, create a test directory and put some files in it.
+Finally, run a command like this:
+
+    docker run --rm -it \
+        -v ${PWD}/bsv.config.psd1:/bsv.config.psd1 \
+        -v ${PWD}/recipient.pubkey.gpg:/recipient.pubkey.gpg \
+        -v ${PWD}/aws.psd1:/run/secrets/aws.psd1 \
+        -v ${PWD}/TestBackupDir:/srv/backuproot \
+        -e BACKUP_SCHEDULE="* * * * *" \
+        mrled/bsv:dev
+
+Note that the above will run the backup every _minute_,
+so you'll want to kill your test pretty quickly
+to prevent sending too much test data to S3.
