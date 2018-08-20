@@ -1,4 +1,4 @@
-# Backup Swarm Volume
+# `bsv-docker`: Backup Swarm Volume
 
 A simple Docker container for backing up a Docker swarm service volume.
 
@@ -19,9 +19,9 @@ Everyone should use Powershell :) no more sh/bash scripts please and thank you.
 
 There are three items that must be configured when deploying bsv into a swarm.
 
-1. A service config called bsv.config.psd1
-2. A service config called recipient.pubkey.gpg
-3. Service secrets called aws.psd1
+1. A service config called `bsv.config.psd1`
+2. A service config called `recipient.pubkey.gpg`
+3. Service secrets called `aws.psd1`
 
 ### Service config: `bsv.config.psd1`
 
