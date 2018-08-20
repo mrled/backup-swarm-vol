@@ -20,6 +20,7 @@ function Write-Log {
         [switch] $Throw
     )
     $msg = "$(Get-Date -UFormat '%Y-%m-%d-%H-%M-%S') [$PSCommandPath] $Message"
+    Out-File -InputObject $msg -FilePath $LogPath
     if ($Throw) {
         throw $msg
     } else {
@@ -50,38 +51,43 @@ try {
 
     $BackupPath = Resolve-Path -Path $BackupPath | Select-Object -ExpandProperty Path
 
-    if ($Compress) {
-        $fileExt = ".tar.zx.gpg"
-        $tarArgs = "-cvJ"
-    } else {
-        $fileExt = ".tar.gpg"
-        $tarArgs = "-cv"
+    $backupParent = Split-Path -Path $BackupPath -Parent
+    $backupDirName = Split-Path -Path $BackupPath -Leaf
+    $tarArgs = @('-c', '-v', '-C', "'$backupParent'")
+    $fileExt = "tar.gpg"
+    if (-not $NoCompress) {
+        $tarArgs += @('-J')
+        $fileExt = "tar.xz.gpg"
     }
-    $archiveName = "${BackupBaseName}.${startTime}.${fileExt}"
 
+    $archiveName = "${BackupBaseName}.${startTime}.${fileExt}"
+    $hashName = "${archiveName}.sha256"
     $workDir = New-TemporaryDirectory
     $archivePath = Join-Path -Path $workDir -ChildPath $archiveName
-    $hashPath = Join-Path -Path $workDir -ChildPath "${archiveName}.sha256"
+    $hashPath = Join-Path -Path $workDir -ChildPath $hashName
 
-    tar $tarArgs $BackupPath |
-        gpg2 --encrypt --recipient "$GpgRecipientId" --output "$archivePath" --trust-model always
+    # Ughhh. I'm having trouble with the pipeline when I run it in Powershell directly -
+    # it results in a working GPG file, but an invalid tar archive.
+    # Maybe the Powershell pipeline is munging binary somehow?
+    /bin/sh -c "tar $($tarArgs -Join " ") '$backupDirName' | gpg2 --encrypt --recipient '$GpgRecipientId' --output '$archivePath' --trust-model always"
+
     if ($LASTEXITCODE -NE 0) {
         Write-Log -Throw -Message "Failed to create encrypted tar archive; pipeline exited with $LASTEXITCODE"
     }
     Write-Log -Message "Saved archive to $archivePath, encrypted for $GpgRecipientId"
 
-    $hash = Get-FileHash -Algorithm SHA256
+    $hash = Get-FileHash -Algorithm SHA256 -Path $archivePath
     Out-File -InputObject "$($hash.Hash) $archiveName" -FilePath $hashPath
     Write-Log -Message "Saved sha256 hash of $($hash.Hash) to $hashPath"
 
-    Write-S3Object -BucketName $S3BucketName -File $hashPath
+    Write-S3Object -BucketName $S3BucketName -File "$hashPath" -Key "$BackupBaseName/$hashName"
     Write-Log -Message "Uploaded $hashPath to bucket $S3BucketName"
 
-    Write-S3Object -BucketName $S3BucketName -File $archivePath
+    Write-S3Object -BucketName $S3BucketName -File $archivePath -Key "$BackupBaseName/$archiveName"
     Write-Log -Message "Uploaded $archivePath to bucket $S3BucketName"
 
     Remove-Item -Recurse -Force $workDir
-    Write-Log -Messgea "Removed working directory $workDir"
+    Write-Log -Message "Removed working directory $workDir"
 
     Write-Log -Message "Backup complete"
 
