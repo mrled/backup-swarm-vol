@@ -18,24 +18,32 @@ ENV AWS_CONFIG_PATH /run/secrets/aws.psd1
 ENV BACKUP_SCHEDULE "0 2 * * *"
 
 RUN true \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get install -y \
+        cron \
         gnupg2 \
         xz-utils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    \
-    # I think dumb-init is in 18.04, but the latest Powershell container is based on 16.04 at this time which doesn't have it
-    && wget https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64.deb \
-    && dpkg -i dumb-init_1.2.2_amd64.deb \
-    && rm dumb-init_1.2.2_amd64.deb \
-    \
-    && Install-Module -Scope AllUsers -Name AWSPowerShell.NetCore -Force \
+    && true
+
+RUN true \
+    && pwsh -Command "Install-Module -Scope AllUsers -Name AWSPowerShell.NetCore -Force" \
+    && true
+
+# I think dumb-init is in 18.04, but the latest Powershell container is based on 16.04 at this time which doesn't have it
+RUN true \
+    && export DIVER="1.2.2" \
+    && export DIDEB="dumb-init_${DIVER}_amd64.deb" \
+    && curl -s -L -o "/root/${DIDEB}" "https://github.com/Yelp/dumb-init/releases/download/v${DIVER}/${DIDEB}" \
+    && dpkg -i "/root/${DIDEB}" \
+    && rm "/root/${DIDEB}" \
     && true
 
 VOLUME /srv/backuproot
 
 COPY ["Enter-Container.ps1", "Backup-SwarmVolume.ps1", "/usr/local/bin/"]
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--", "pwsh", "-NoLogo", "-NonInteractive", "-NoProfile", "-File", "/usr/local/bin/Backup-SwarmVolume.ps1"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "pwsh", "-NoLogo", "-NonInteractive", "-NoProfile", "-File", "/usr/local/bin/Enter-Container.ps1"]
 
