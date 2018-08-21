@@ -39,9 +39,9 @@ This defaults to 2AM (in the _Docker swarm node's_ timezone) every night:
       0 2 * * *
 
 Modify this by specifying the `BACKUP_SCHEDULE` variable in crontab format.
-For instance, this will back up at 4:30 AM every day instead:
+For instance, this will back up at 4:30 AM every Saturday instead:
 
-    -e BACKUP_SCHEDULE:"15 4 * * *"
+    -e BACKUP_SCHEDULE:"15 4 * * 6"
 
 ### Service config: `bsv.config.psd1`
 
