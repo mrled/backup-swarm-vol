@@ -26,7 +26,8 @@ There are three items that must be configured when deploying bsv into a swarm.
 3. Service secrets called `aws.psd1`
 
 You can also optionally configure the backup schedule.
-This defaults to 2AM (in the _Docker swarm node's_ timezone) every night:
+This defaults to 2AM (in the _Docker swarm node's_ timezone) every night,
+and is set in crontab's format:
 
     # +-------------- minute (0 - 59)
     # | +------------ hour (0 - 23)
@@ -38,7 +39,7 @@ This defaults to 2AM (in the _Docker swarm node's_ timezone) every night:
     # | | | | |
       0 2 * * *
 
-Modify this by specifying the `BACKUP_SCHEDULE` variable in crontab format.
+Modify this by specifying a new `BACKUP_SCHEDULE` variable in crontab format.
 For instance, this will back up at 4:30 AM every Saturday instead:
 
     -e BACKUP_SCHEDULE:"15 4 * * 6"
