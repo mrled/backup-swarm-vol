@@ -66,9 +66,10 @@ try {
     $archivePath = Join-Path -Path $workDir -ChildPath $archiveName
     $hashPath = Join-Path -Path $workDir -ChildPath $hashName
 
-    # Ughhh. I'm having trouble with the pipeline when I run it in Powershell directly -
-    # it results in a working GPG file, but an invalid tar archive.
-    # Maybe the Powershell pipeline is munging binary somehow?
+    # Apparently "tar | gpg" in Powershell CANNOT stream -
+    # it runs tar and stores its stdout in memory before passing to gpg.
+    # It also may be somehow modifying the stream (maybe an encoding issue?).
+    # So, we tell the shell to do it. Lame lol.
     /bin/sh -c "tar $($tarArgs -Join " ") '$backupDirName' | gpg2 --encrypt --recipient '$GpgRecipientId' --output '$archivePath' --trust-model always"
 
     if ($LASTEXITCODE -NE 0) {
