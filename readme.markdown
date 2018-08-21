@@ -13,7 +13,9 @@ and uploads the hash and the encrypted archive to Amazon S3.
 
 It's written in Powershell Core.
 
-Everyone should use Powershell :) no more sh/bash scripts please and thank you.
+This is partially because I want to get more familiar with PS Core,
+and partially because I'm desperately searching for a replacement for sh programming,
+which I would frankly love to completely remove from my brain.
 
 ## Configuration
 
