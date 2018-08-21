@@ -3,9 +3,9 @@
 #Requires -Modules AWSPowerShell.NetCore
 
 [CmdletBinding()] Param(
-    $ParameterPath = $env:BSV_PARAMETER_PATH,
-    $GpgRecipientKeyPath = $env:GPG_RECIPIENT_KEY_PATH,
-    $AwsConfigPath = $env:AWS_CONFIG_PATH,
+    $ParameterPath = "/bsv.config.psd1",
+    $GpgRecipientKeyPath = "/recipient.pubkey.gpg",
+    $AwsConfigPath = "/run/secrets/aws.psd1",
     $BackupSchedule = $env:BACKUP_SCHEDULE
 )
 

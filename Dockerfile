@@ -1,18 +1,6 @@
 FROM microsoft/powershell:6.0.4-ubuntu-16.04
 LABEL maintainer "me@micahrl.com"
 
-# The path to the Backup-SwarmVolume configuration file
-# Add this file in as a Docker swarm service config
-ENV BSV_PARAMETER_PATH /bsv.config.psd1
-
-# The path to a public GPG key which will be used to encrypt the backups before uploading
-# Add this file in as a Docker swarm service config
-ENV GPG_RECIPIENT_KEY_PATH /recipient.pubkey.gpg
-
-# The path to a PowerShell Data File containing an AWS secret, key, and region
-# Add this in as a Docker swarm service secret
-ENV AWS_CONFIG_PATH /run/secrets/aws.psd1
-
 # The cron schedule for running the backup script
 # min hour day month weekday
 ENV BACKUP_SCHEDULE "0 2 * * *"
