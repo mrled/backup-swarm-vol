@@ -46,4 +46,3 @@ VOLUME /srv/backuproot
 COPY ["Enter-Container.ps1", "Backup-SwarmVolume.ps1", "/usr/local/bin/"]
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "pwsh", "-NoLogo", "-NonInteractive", "-NoProfile", "-File", "/usr/local/bin/Enter-Container.ps1"]
-
