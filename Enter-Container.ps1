@@ -21,7 +21,10 @@ $recipientKeyId = $slsMatch.Matches.Groups |
     Where-Object -Property Name -EQ 'keyid' |
     Select-Object -ExpandProperty Value
 
-"${BackupSchedule} pwsh -NoLogo -NonInteractive -NoProfile -File /usr/local/bin/Backup-SwarmVolume.ps1 -ParameterFile '$ParameterPath'" | crontab -
+$crontabCommand = "pwsh -NoLogo -NonInteractive -NoProfile -File /usr/local/bin/Backup-SwarmVolume.ps1 -ParameterFile '$ParameterPath'"
+$crontabEntry = "${BackupSchedule} $crontabCommand"
+# Note that this will fail if the cron schedule is not valid
+"$crontabEntry" | crontab -
 cron
 
 if (-not (Test-Path -Path /var/log/bsv.log)) {
